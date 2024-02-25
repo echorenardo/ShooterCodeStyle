@@ -8,17 +8,23 @@ public class Shooter : MonoBehaviour
     [SerializeField] private float _speed;
     [SerializeField] private Bullet _bullet;
     [SerializeField] private bool _isShoot;
-    [SerializeField] private Transform _target;
     [SerializeField] private Transform _weaponBarrel;
     [SerializeField] private Animator _animator;
+    [SerializeField] private TargetPoints _targetPoints;
 
+    private List<Bullet> _pool = new();
+    private Transform _target;
     private float _delay = 0.25f;
     private float _poolSize = 10;
-    private List<Bullet> _pool = new();
+    private float _timePerTarget = 2f;
 
     private void Awake() => FillPool();
 
-    private void Start() => StartCoroutine(Shoot());
+    private void Start()
+    {
+        StartCoroutine(SetTarget());
+        StartCoroutine(Shoot());
+    }
 
     private IEnumerator Shoot()
     {
@@ -52,6 +58,18 @@ public class Shooter : MonoBehaviour
             bullet.SetTarget(_target);
             bullet.transform.position = _weaponBarrel.position;
             bullet.Enable();
+        }
+    }
+
+    private IEnumerator SetTarget()
+    {
+        WaitForSeconds wait = new(_timePerTarget);
+
+        while (_isShoot)
+        {
+            _target = _targetPoints.GetPoint();
+            _targetPoints.ChangePoint();
+            yield return wait;
         }
     }
 }
